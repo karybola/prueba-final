@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Neptur: Funciones de la Lengua</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #6DD5FA, #2980B9); /* Fondo estilo Neptur (tonos azules educativos) */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #quiz-container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 750px; /* Un poco más ancho para explicaciones */
+            text-align: center;
+        }
+
+        #quiz-header {
+            margin-bottom: 25px;
+            border-bottom: 2px solid #1ABC9C; /* Un acento de color Neptur */
+            padding-bottom: 15px;
+        }
+
+        #quiz-header h1 {
+            color: #2C3E50; /* Color oscuro principal para el título */
+            font-size: 2.2em;
+            margin-bottom: 5px;
+        }
+         #quiz-header h1 .neptur-brand {
+            color: #1ABC9C; /* Color distintivo para Neptur */
+            font-weight: bold;
+        }
+        #quiz-header p {
+            font-size: 1.1em;
+            color: #555;
+        }
+
+
+        #timer {
+            font-size: 1.2em;
+            color: #E74C3C;
+            font-weight: bold;
+            margin-bottom: 20px;
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+
+        #question-area h2 {
+            font-size: 1.5em; /* Ajustado para preguntas más largas */
+            color: #34495E;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            text-align: left;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr; /* Una columna para mejor lectura */
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .option-btn {
+            background-color: #3498DB; /* Color de botones Neptur */
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            text-align: left;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background-color: #2980B9; /* Hover más oscuro */
+            transform: translateY(-2px);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        .option-btn.correct {
+            background-color: #2ECC71 !important; /* Verde para correcto */
+            border: 2px solid #27ae60;
+        }
+
+        .option-btn.incorrect {
+            background-color: #E74C3C !important; /* Rojo para incorrecto */
+            border: 2px solid #c0392b;
+        }
+
+        #explanation-area {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 0.95em;
+            line-height: 1.6;
+            border-left: 5px solid #1ABC9C; /* Acento Neptur */
+        }
+        #explanation-area h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+        #explanation-area p {
+            margin-bottom: 5px;
+        }
+
+        #navigation-area button {
+            background-color: #1ABC9C; /* Color de acción Neptur */
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin-top: 15px;
+        }
+
+        #navigation-area button:hover {
+            background-color: #16A085;
+        }
+
+        #results-screen {
+            display: none; /* Oculto inicialmente */
+        }
+        #results-screen h2 {
+             color: #2C3E50;
+             font-size: 2em;
+        }
+        #results-screen p {
+            font-size: 1.2em;
+            margin: 15px 0;
+        }
+        #detailed-results-container {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .result-item {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+        }
+        .result-item p { font-size: 1em; margin: 8px 0; }
+        .result-item strong { color: #333; }
+        .result-item .user-answer.correct { color: #2ECC71; font-weight: bold; }
+        .result-item .user-answer.incorrect { color: #E74C3C; font-weight: bold; }
+        .result-item .explanation-preview {
+            font-style: italic;
+            color: #555;
+            font-size: 0.9em;
+        }
+
+
+        /* Pantalla de inicio */
+        #start-screen {
+            display: block; /* Visible inicialmente */
+        }
+        #start-screen p {
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        #start-btn {
+            background-color: #F39C12; /* Naranja para empezar, destaca */
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.3em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        #start-btn:hover {
+            background-color: #E67E22;
+        }
+
+        /* Responsividad */
+        @media (max-width: 600px) {
+            #quiz-container {
+                padding: 20px;
+            }
+            #quiz-header h1 {
+                font-size: 1.8em;
+            }
+            #question-area h2 {
+                font-size: 1.2em;
+            }
+            .option-btn {
+                padding: 12px 15px;
+                font-size: 0.95em;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div id="quiz-container">
+        <div id="start-screen">
+            <div id="quiz-header">
+                <h1>Quiz <span class="neptur-brand">Neptur</span></h1>
+                <p>Funciones de la Lengua (Español 1)</p>
+            </div>
+            <p>Bienvenido al quiz sobre las Funciones de la Lengua. Tendrás <strong>12 minutos</strong> para completarlo.</p>
+            <p>Lee cada pregunta con atención y selecciona la mejor respuesta. Al final, podrás revisar tus aciertos y aprender de cada explicación.</p>
+            <button id="start-btn">Comenzar Quiz</button>
+        </div>
+
+        <div id="question-screen" style="display:none;">
+            <div id="quiz-header">
+                 <h1>Quiz <span class="neptur-brand">Neptur</span></h1>
+                 <p id="question-counter"></p>
+            </div>
+            <div id="timer">Tiempo restante: 12:00</div>
+            <div id="question-area">
+                <h2 id="question-text"></h2>
+                <div id="options-grid">
+                    <button class="option-btn" data-index="0"></button>
+                    <button class="option-btn" data-index="1"></button>
+                    <button class="option-btn" data-index="2"></button>
+                    <button class="option-btn" data-index="3"></button>
+                </div>
+            </div>
+            <div id="explanation-area" style="display:none;">
+                <h3 id="explanation-title"></h3>
+                <p id="explanation-text"></p>
+            </div>
+            <div id="navigation-area">
+                <button id="next-btn" style="display:none;">Siguiente Pregunta</button>
+            </div>
+        </div>
+
+        <div id="results-screen" style="display:none;">
+            <h2>¡Quiz Completado!</h2>
+            <p id="final-score"></p>
+            <p id="time-taken"></p>
+            <h3>Resumen Detallado de Respuestas:</h3>
+            <div id="detailed-results-container">
+                <!-- Aquí se mostrarán los detalles de cada pregunta -->
+            </div>
+            <button id="restart-btn">Volver a Intentar</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN DEL QUIZ ---
+        const TOTAL_TIME = 12 * 60; // 12 minutos en segundos
+
+        let questions = [
+            {
+                text: "¿Cuál es el principal objetivo de la función referencial del lenguaje?",
+                options: [
+                    "Convencer al receptor de una idea.",
+                    "Transmitir información de forma objetiva y sin trasfondo.",
+                    "Crear belleza y agrado mediante el uso de recursos literarios.",
+                    "Expresar los sentimientos y emociones del emisor."
+                ],
+                correctAnswerIndex: 1,
+                explanation: {
+                    correct: "¡Exacto! La función referencial se centra en comunicar hechos, datos y explicaciones de manera objetiva, sin buscar influir en el receptor más allá de informarle.",
+                    incorrectBase: "Esa no es la principal característica de la función referencial. ",
+                    optionsExplanation: [
+                        "Convencer es propio de la función apelativa.",
+                        "Esta es la definición correcta.",
+                        "Crear belleza es el objetivo de la función poética.",
+                        "Expresar sentimientos es más cercano a la función emotiva (aunque no se detalló en este texto, es diferente a la referencial)."
+                    ]
+                }
+            },
+            {
+                text: "La frase: \"¡Llame ya para obtener el suyo!\" es un ejemplo claro de:",
+                options: [
+                    "Función poética",
+                    "Función referencial",
+                    "Función apelativa",
+                    "Función descriptiva"
+                ],
+                correctAnswerIndex: 2,
+                explanation: {
+                    correct: "¡Correcto! Esta frase busca una acción directa del receptor (llamar), lo cual es característico de la función apelativa, común en la publicidad.",
+                    incorrectBase: "No es la función más adecuada para este ejemplo. ",
+                    optionsExplanation: [
+                        "La función poética se enfocaría más en la estética del mensaje.",
+                        "La función referencial simplemente informaría sobre un producto sin incitar a la acción.",
+                        "Esta es la respuesta correcta.",
+                        "Aunque puede tener elementos descriptivos, su principal intención es persuadir, lo que la hace apelativa."
+                    ]
+                }
+            },
+            {
+                text: "¿Qué función del lenguaje se caracteriza por el uso de recursos literarios como la metáfora o la alegoría para embellecer el mensaje?",
+                options: [
+                    "Función apelativa",
+                    "Función informativa",
+                    "Función poética",
+                    "Función argumentativa"
+                ],
+                correctAnswerIndex: 2,
+                explanation: {
+                    correct: "¡Muy bien! La función poética es la que utiliza figuras retóricas y un lenguaje elaborado para causar agrado, belleza o gracia, priorizando la forma del mensaje.",
+                    incorrectBase: "Esta opción no corresponde a la función descrita. ",
+                    optionsExplanation: [
+                        "La función apelativa busca convencer, no necesariamente embellecer con recursos literarios complejos.",
+                        "La función informativa es sinónimo de la referencial, que es objetiva.",
+                        "Esta es la definición correcta.",
+                        "La argumentativa, ligada a la apelativa, se centra en la lógica de los argumentos, no tanto en la belleza literaria."
+                    ]
+                }
+            },
+            {
+                text: "Considera la siguiente descripción: \"El gato: Es un animal perteneciente a los felinos felidae, tiene un excelente olfato y su oído es muy agudo...\". ¿Qué función del lenguaje predomina?",
+                options: [
+                    "Función apelativa",
+                    "Función poética",
+                    "Función fática (de contacto)",
+                    "Función referencial"
+                ],
+                correctAnswerIndex: 3,
+                explanation: {
+                    correct: "¡Excelente! Este texto se limita a describir características objetivas del gato, informando al lector. Esta es la esencia de la función referencial.",
+                    incorrectBase: "No es la función predominante en este caso. ",
+                    optionsExplanation: [
+                        "No busca convencer ni obtener una respuesta del lector.",
+                        "No utiliza un lenguaje elaborado ni figuras literarias para embellecer la descripción.",
+                        "La función fática (no explicada en el texto) se usa para iniciar, mantener o cerrar la comunicación, no para describir.",
+                        "Esta es la respuesta correcta."
+                    ]
+                }
+            },
+            {
+                text: "Cuando un mensaje busca principalmente convencer al receptor, cambiar su idea o que realice una acción, estamos ante la función:",
+                options: [
+                    "Referencial",
+                    "Poética",
+                    "Apelativa",
+                    "Metalingüística"
+                ],
+                correctAnswerIndex: 2,
+                explanation: {
+                    correct: "¡Así es! La función apelativa tiene como fin influir en el receptor, ya sea para que responda una pregunta, obedezca una orden, o se convenza de un argumento.",
+                    incorrectBase: "La función descrita no corresponde a esta opción. ",
+                    optionsExplanation: [
+                        "La referencial solo informa objetivamente.",
+                        "La poética busca la belleza del mensaje.",
+                        "Esta es la respuesta correcta.",
+                        "La metalingüística (no explicada en el texto) se usa para hablar sobre el propio lenguaje."
+                    ]
+                }
+            },
+            {
+                text: "La frase \"Tiene piel de durazno\" es un ejemplo de función poética porque:",
+                options: [
+                    "Describe objetivamente el color de la piel.",
+                    "Es una orden directa para el receptor.",
+                    "Utiliza una metáfora que no debe tomarse literalmente y busca belleza.",
+                    "Informa sobre las propiedades de los duraznos."
+                ],
+                correctAnswerIndex: 2,
+                explanation: {
+                    correct: "¡Perfecto! \"Piel de durazno\" es una metáfora que compara la suavidad o textura de la piel con la de un durazno, buscando un efecto estético, propio de la función poética.",
+                    incorrectBase: "Considera el propósito principal de la frase. ",
+                    optionsExplanation: [
+                        "No es una descripción objetiva, sino figurada.",
+                        "No contiene ninguna orden.",
+                        "Esta es la respuesta correcta.",
+                        "El foco no está en el durazno, sino en la cualidad que se quiere atribuir a la piel."
+                    ]
+                }
+            },
+            {
+                text: "¿En qué tipo de textos es MÁS común encontrar la función apelativa?",
+                options: [
+                    "Novelas y poemas.",
+                    "Manuales de instrucciones y discursos políticos.",
+                    "Noticias y artículos científicos.",
+                    "Cuentos y fábulas."
+                ],
+                correctAnswerIndex: 1,
+                explanation: {
+                    correct: "¡Muy bien! Los manuales dan instrucciones (buscan una acción) y los discursos políticos buscan convencer (cambiar ideas), ambos usos típicos de la función apelativa.",
+                    incorrectBase: "Piensa dónde se busca más una respuesta o persuasión. ",
+                    optionsExplanation: [
+                        "Novelas y poemas suelen tener función poética.",
+                        "Esta es la respuesta correcta.",
+                        "Noticias y artículos científicos son predominantemente referenciales.",
+                        "Cuentos y fábulas suelen tener función poética o narrativa."
+                    ]
+                }
+            },
+            {
+                text: "Una diferencia clave entre la función referencial y la función apelativa es que:",
+                options: [
+                    "La referencial usa lenguaje complejo y la apelativa lenguaje simple.",
+                    "La referencial busca entretener y la apelativa informar.",
+                    "La referencial solo transmite datos, mientras la apelativa busca una reacción o convencer.",
+                    "La referencial siempre es breve y la apelativa extensa."
+                ],
+                correctAnswerIndex: 2,
+                explanation: {
+                    correct: "¡Correcto! La función referencial se enfoca en la información objetiva, mientras que la apelativa se centra en el receptor, buscando influir en él o provocar una respuesta.",
+                    incorrectBase: "Analiza la intención principal de cada función. ",
+                    optionsExplanation: [
+                        "La complejidad del lenguaje no es el factor distintivo principal.",
+                        "Es al revés en parte; la referencial informa y la apelativa puede entretener, pero su fin es convencer.",
+                        "Esta es la respuesta correcta.",
+                        "La extensión del mensaje no define la función."
+                    ]
+                }
+            },
+             {
+                text: "La expresión \"El viento Sur, caliente y perezoso, empujaba las nubes blanquecinas que se rasgaban al correr hacia el Norte\" (extracto de un texto literario) es un ejemplo de:",
+                options: [
+                    "Función referencial, porque describe el clima.",
+                    "Función apelativa, porque intenta que imaginemos la escena.",
+                    "Función poética, por el uso de lenguaje descriptivo y personificación para crear una imagen vívida.",
+                    "Función de orden, porque indica la dirección del viento."
+                ],
+                correctAnswerIndex: 2,
+                explanation: {
+                    correct: "¡Excelente! Aunque describe, lo hace con un lenguaje elaborado y figuras como la personificación (\"viento perezoso\"), buscando un efecto estético, propio de la función poética.",
+                    incorrectBase: "Considera cómo se está presentando la información. ",
+                    optionsExplanation: [
+                        "Si bien describe, el lenguaje no es puramente objetivo; hay un embellecimiento.",
+                        "No busca una acción o respuesta directa, sino más bien un deleite estético.",
+                        "Esta es la respuesta correcta.",
+                        "No es una orden, sino una descripción artística."
+                    ]
+                }
+            },
+            {
+                text: "Según el texto, las tres funciones principales del lenguaje revisadas son:",
+                options: [
+                    "Informativa, expresiva y directiva.",
+                    "Referencial, apelativa y poética.",
+                    "Narrativa, descriptiva y argumentativa.",
+                    "Objetiva, subjetiva y persuasiva."
+                ],
+                correctAnswerIndex: 1,
+                explanation: {
+                    correct: "¡Así es! El texto introductorio y el desarrollo se centran específicamente en estas tres funciones: referencial, apelativa y poética.",
+                    incorrectBase: "Revisa los nombres exactos que se mencionan en el documento. ",
+                    optionsExplanation: [
+                        "Aunque relacionadas, estos no son los términos exactos usados para las tres funciones principales del texto.",
+                        "Esta es la respuesta correcta.",
+                        "Estas son tipologías textuales o modos de discurso, no las funciones del lenguaje primarias explicadas.",
+                        "Estos son enfoques o cualidades del lenguaje, no las funciones en sí mismas según el texto."
+                    ]
+                }
+            }
+        ];
+
+        // --- VARIABLES GLOBALES ---
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timeLeft = TOTAL_TIME;
+        let timerInterval;
+        let quizStartTime;
+        let userAnswers = []; // Para guardar las respuestas detalladas
+
+        // --- ELEMENTOS DEL DOM ---
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        
+        const startBtn = document.getElementById('start-btn');
+        const timerDisplay = document.getElementById('timer');
+        const questionCounter = document.getElementById('question-counter');
+        const questionText = document.getElementById('question-text');
+        const optionButtons = document.querySelectorAll('.option-btn');
+        const explanationArea = document.getElementById('explanation-area');
+        const explanationTitle = document.getElementById('explanation-title');
+        const explanationText = document.getElementById('explanation-text');
+        const nextBtn = document.getElementById('next-btn');
+        
+        const finalScoreDisplay = document.getElementById('final-score');
+        const timeTakenDisplay = document.getElementById('time-taken');
+        const detailedResultsContainer = document.getElementById('detailed-results-container');
+        const restartBtn = document.getElementById('restart-btn');
+
+        // --- FUNCIONES ---
+        function startQuiz() {
+            if (questions.length === 0) {
+                alert("Error: No hay preguntas cargadas.");
+                return;
+            }
+
+            startScreen.style.display = 'none';
+            questionScreen.style.display = 'block';
+            resultsScreen.style.display = 'none';
+
+            currentQuestionIndex = 0;
+            score = 0;
+            timeLeft = TOTAL_TIME;
+            userAnswers = []; // Resetear respuestas
+            questions.forEach(q => { // Asegurarse de que el estado de las preguntas se reinicie si se vuelve a intentar
+                q.userAnswerIndex = null;
+                q.isCorrect = null;
+            });
+
+
+            quizStartTime = new Date();
+            displayQuestion();
+            startTimer();
+        }
+
+        function displayQuestion() {
+            if (currentQuestionIndex < questions.length) {
+                const currentQuestion = questions[currentQuestionIndex];
+                questionCounter.textContent = `Pregunta ${currentQuestionIndex + 1} de ${questions.length}`;
+                questionText.textContent = currentQuestion.text;
+                
+                optionButtons.forEach((btn, index) => {
+                    btn.textContent = currentQuestion.options[index];
+                    btn.disabled = false;
+                    btn.classList.remove('correct', 'incorrect');
+                    btn.style.display = 'block';
+                });
+
+                explanationArea.style.display = 'none';
+                nextBtn.style.display = 'none';
+            } else {
+                endQuiz();
+            }
+        }
+
+        function handleOptionClick(event) {
+            const selectedOptionIndex = parseInt(event.target.dataset.index);
+            const currentQuestion = questions[currentQuestionIndex];
+            
+            // Guardar la respuesta del usuario para el resumen final
+            currentQuestion.userAnswerIndex = selectedOptionIndex;
+
+            optionButtons.forEach(btn => btn.disabled = true);
+
+            let explanationToShow = "";
+            let titleExplanation = "";
+
+            if (selectedOptionIndex === currentQuestion.correctAnswerIndex) {
+                score++;
+                event.target.classList.add('correct');
+                titleExplanation = "¡Respuesta Correcta!";
+                explanationToShow = currentQuestion.explanation.correct;
+                currentQuestion.isCorrect = true;
+            } else {
+                event.target.classList.add('incorrect');
+                optionButtons[currentQuestion.correctAnswerIndex].classList.add('correct');
+                titleExplanation = "Respuesta Incorrecta";
+                explanationToShow = `${currentQuestion.explanation.incorrectBase} La respuesta correcta era: "<strong>${currentQuestion.options[currentQuestion.correctAnswerIndex]}</strong>".<br><br><em>Explicación:</em> ${currentQuestion.explanation.optionsExplanation[currentQuestion.correctAnswerIndex]}`;
+                // Adicionalmente, explicar por qué la opción elegida fue incorrecta, si se tiene esa info:
+                if (currentQuestion.explanation.optionsExplanation[selectedOptionIndex] !== currentQuestion.explanation.optionsExplanation[currentQuestion.correctAnswerIndex]) {
+                     explanationToShow = `Elegiste: "${currentQuestion.options[selectedOptionIndex]}".<br><em>Por qué no es correcto:</em> ${currentQuestion.explanation.optionsExplanation[selectedOptionIndex]}<br><br>La respuesta correcta era: "<strong>${currentQuestion.options[currentQuestion.correctAnswerIndex]}</strong>".<br><em>Explicación:</em> ${currentQuestion.explanation.optionsExplanation[currentQuestion.correctAnswerIndex]}`;
+                }
+                 currentQuestion.isCorrect = false;
+            }
+            
+            explanationTitle.textContent = titleExplanation;
+            explanationText.innerHTML = explanationToShow;
+            explanationArea.style.display = 'block';
+            nextBtn.style.display = 'inline-block';
+
+            // Guardar para el resumen detallado
+            userAnswers.push({
+                questionText: currentQuestion.text,
+                options: currentQuestion.options,
+                userAnswer: currentQuestion.options[selectedOptionIndex],
+                correctAnswer: currentQuestion.options[currentQuestion.correctAnswerIndex],
+                isCorrect: selectedOptionIndex === currentQuestion.correctAnswerIndex,
+                explanation: explanationToShow // o una versión resumida
+            });
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            displayQuestion();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval); // Limpiar cualquier intervalo previo
+            timerDisplay.textContent = `Tiempo restante: ${Math.floor(timeLeft / 60)}:${(timeLeft % 60) < 10 ? '0' : ''}${timeLeft % 60}`; // Display inicial
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const minutes = Math.floor(timeLeft / 60);
+                const seconds = timeLeft % 60;
+                timerDisplay.textContent = `Tiempo restante: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerDisplay.textContent = "¡Tiempo agotado!";
+                    endQuiz(true); 
+                }
+            }, 1000);
+        }
+
+        function endQuiz(timeUp = false) {
+            clearInterval(timerInterval);
+            questionScreen.style.display = 'none';
+            resultsScreen.style.display = 'block';
+
+            const quizEndTime = new Date();
+            const timeSpentMs = quizEndTime - quizStartTime;
+            const timeSpentSec = Math.floor(timeSpentMs / 1000);
+            const minutesSpent = Math.floor(timeSpentSec / 60);
+            const secondsSpent = timeSpentSec % 60;
+
+            if (timeUp) {
+                 finalScoreDisplay.textContent = `¡Tiempo agotado! Tu puntaje final es: ${score} de ${questions.length}`;
+            } else {
+                 finalScoreDisplay.textContent = `Tu puntaje final es: ${score} de ${questions.length}`;
+            }
+            timeTakenDisplay.textContent = `Tiempo utilizado: ${minutesSpent} minutos y ${secondsSpent} segundos.`;
+
+            renderDetailedResults();
+        }
+        
+        function renderDetailedResults() {
+            detailedResultsContainer.innerHTML = ''; 
+            questions.forEach((q, index) => { // Iterar sobre todas las preguntas originales
+                const resultDiv = document.createElement('div');
+                resultDiv.classList.add('result-item');
+                
+                let userAnswerText = "No respondida";
+                let userAnswerClass = "";
+                let explanationContent = q.explanation.optionsExplanation[q.correctAnswerIndex]; // Explicación de la correcta
+
+                if (q.userAnswerIndex !== null) { // Si la pregunta fue respondida
+                    userAnswerText = q.options[q.userAnswerIndex];
+                    if (q.isCorrect) {
+                        userAnswerClass = 'correct';
+                        explanationContent = q.explanation.correct;
+                    } else {
+                        userAnswerClass = 'incorrect';
+                         // Formato mejorado para la explicación en el resumen
+                        explanationContent = `Elegiste: "${q.options[q.userAnswerIndex]}". <span class="explanation-preview">(${q.explanation.optionsExplanation[q.userAnswerIndex]})</span><br>Correcta: "${q.options[q.correctAnswerIndex]}". <span class="explanation-preview">(${q.explanation.optionsExplanation[q.correctAnswerIndex]})</span>`;
+
+                    }
+                } else { // Si no fue respondida (por tiempo agotado antes de llegar)
+                     explanationContent = `La respuesta correcta era: "${q.options[q.correctAnswerIndex]}". <span class="explanation-preview">(${q.explanation.optionsExplanation[q.correctAnswerIndex]})</span>`;
+                }
+
+
+                resultDiv.innerHTML = `
+                    <p><strong>Pregunta ${index + 1}:</strong> ${q.text}</p>
+                    <p>Tu respuesta: <span class="user-answer ${userAnswerClass}">${userAnswerText}</span></p>
+                    ${!q.isCorrect && q.userAnswerIndex !== null ? `<p>Respuesta correcta: <strong>${q.options[q.correctAnswerIndex]}</strong></p>` : ''}
+                     ${q.userAnswerIndex === null ? `<p>Respuesta correcta: <strong>${q.options[q.correctAnswerIndex]}</strong></p>` : ''}
+                    <p><em>Explicación:</em> ${explanationContent}</p>
+                `;
+                detailedResultsContainer.appendChild(resultDiv);
+            });
+        }
+
+        // --- EVENT LISTENERS ---
+        startBtn.addEventListener('click', startQuiz);
+        nextBtn.addEventListener('click', nextQuestion);
+        restartBtn.addEventListener('click', () => {
+            resultsScreen.style.display = 'none';
+            startScreen.style.display = 'block';
+            // Podrías llamar a startQuiz() directamente si quieres saltar la pantalla de inicio
+            // o recargar la página con location.reload(); para un reinicio completo.
+        });
+
+        optionButtons.forEach(button => {
+            button.addEventListener('click', handleOptionClick);
+        });
+
+    </script>
+</body>
+</html>
